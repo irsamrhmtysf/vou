@@ -1,32 +1,197 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>v.o.u</title>
-    <style>
-      :root {
-        color-scheme: dark;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: #0b1020;
-        color: #f4f7fb;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-      h1 {
-        margin: 0;
-        font-size: clamp(2rem, 5vw, 4rem);
-        letter-spacing: 0.04em;
-        font-weight: 600;
-      }
-    </style>
+    <meta
+      name="description"
+      content="A free, open-source voice translator for Indonesian, Arabic, English, Chinese, Korean, and Japanese."
+    />
+    <meta name="theme-color" content="#f6f7f4" />
+    <title>V.O.U — Voice translator</title>
+    <link rel="stylesheet" href="app.css" />
+    <script src="app.js" defer></script>
   </head>
   <body>
-    <h1>welcome to v.o.u</h1>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="V.O.U home">
+          <span class="brand-mark" aria-hidden="true">v.</span>
+          <span>v.o.u</span>
+        </a>
+        <span class="topbar-note">A little closer, in any language.</span>
+      </header>
+
+      <section class="translator" aria-labelledby="page-title">
+        <div class="intro">
+          <p class="eyebrow"><span></span> YOUR VOICE, UNDERSTOOD</p>
+          <h1 id="page-title">Say it your way.</h1>
+          <p class="intro-copy">
+            Speak or type to translate. Start with Indonesian and Arabic, or
+            choose another language.
+          </p>
+        </div>
+
+        <div class="language-bar" aria-label="Translation languages">
+          <label class="language-select">
+            <span class="sr-only">Translate from</span>
+            <select id="source-language" aria-label="Translate from">
+              <option value="id">Bahasa Indonesia</option>
+              <option value="ar">العربية</option>
+              <option value="en">English</option>
+              <option value="zh">中文</option>
+              <option value="ko">한국어</option>
+              <option value="ja">日本語</option>
+            </select>
+          </label>
+          <button
+            class="swap-button"
+            id="swap-languages"
+            type="button"
+            aria-label="Swap languages"
+            title="Swap languages"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 7h13m0 0-3-3m3 3-3 3M17 17H4m0 0 3 3m-3-3 3-3" />
+            </svg>
+          </button>
+          <label class="language-select">
+            <span class="sr-only">Translate to</span>
+            <select id="target-language" aria-label="Translate to">
+              <option value="ar">العربية</option>
+              <option value="id">Bahasa Indonesia</option>
+              <option value="en">English</option>
+              <option value="zh">中文</option>
+              <option value="ko">한국어</option>
+              <option value="ja">日本語</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="translation-grid">
+          <section class="text-card input-card" aria-label="Text to translate">
+            <div class="card-heading">
+              <span id="source-label">Bahasa Indonesia</span>
+              <span class="card-hint">YOU SAY</span>
+            </div>
+            <textarea
+              id="source-text"
+              rows="5"
+              maxlength="5000"
+              placeholder="Type something or tap the microphone to speak..."
+              aria-label="Text to translate"
+              dir="auto"
+            ></textarea>
+            <div class="card-footer">
+              <span class="character-count" id="character-count">0 / 5000</span>
+              <button
+                class="icon-button listen-button"
+                id="listen-button"
+                type="button"
+                aria-label="Start voice input"
+                title="Start voice input"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="9" y="2.5" width="6" height="12" rx="3" />
+                  <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5m-4 0h8" />
+                </svg>
+              </button>
+            </div>
+          </section>
+
+          <section class="text-card output-card" aria-label="Translation">
+            <div class="card-heading">
+              <span id="target-label">العربية</span>
+              <span class="card-hint">TRANSLATION</span>
+            </div>
+            <div
+              class="translation-output"
+              id="translation-output"
+              role="status"
+              aria-live="polite"
+              dir="auto"
+              lang="ar"
+            >
+              <span class="placeholder">Your translation will appear here.</span>
+            </div>
+            <div class="card-footer">
+              <span class="status-message" id="status-message">Ready when you are.</span>
+              <div class="output-actions">
+                <button
+                  class="icon-button"
+                  id="speak-button"
+                  type="button"
+                  aria-label="Read translation aloud"
+                  title="Read translation aloud"
+                  disabled
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M11 5 6 9H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12" />
+                  </svg>
+                </button>
+                <button
+                  class="icon-button"
+                  id="copy-button"
+                  type="button"
+                  aria-label="Copy translation"
+                  title="Copy translation"
+                  disabled
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="8" y="8" width="12" height="13" rx="2" />
+                    <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="action-row">
+          <button class="clear-button" id="clear-button" type="button">Clear</button>
+          <button class="translate-button" id="translate-button" type="button">
+            <span>Translate</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-6-6 6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+
+        <details class="settings">
+          <summary>Translation settings</summary>
+          <div class="settings-fields">
+            <label>
+              LibreTranslate server
+              <input
+                id="server-url"
+                type="url"
+                value="https://translate.argosopentech.com"
+                placeholder="https://your-libretranslate-server"
+                autocomplete="url"
+              />
+            </label>
+            <label>
+              API key <span class="optional-label">(if required)</span>
+              <input
+                id="api-key"
+                type="password"
+                placeholder="Only kept for this session"
+                autocomplete="off"
+              />
+            </label>
+            <p>
+              Uses LibreTranslate. The server may be public or self-hosted; any
+              text you translate is sent to that server.
+            </p>
+          </div>
+        </details>
+
+        <footer class="app-footer">
+          <span>Free &amp; open source</span>
+          <span class="footer-dot" aria-hidden="true"></span>
+          <span>Voice recognition uses your browser; text goes to your chosen server.</span>
+        </footer>
+      </section>
+    </main>
   </body>
 </html>
