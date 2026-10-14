@@ -1,0 +1,78 @@
+:root {
+  --bg-1: #0f172a;
+  --bg-2: #1d4ed8;
+  --card: rgba(15, 23, 42, 0.72);
+  --text: #e2e8f0;
+  --muted: #cbd5e1;
+  --accent: #7dd3fc;
+  --button: #38bdf8;
+  --button-hover: #0ea5e9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  color: var(--text);
+}
+
+.hero {
+  width: min(90vw, 560px);
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin: 0 0 1rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  line-height: 1.1;
+}
+
+.subtitle {
+  margin: 1rem 0 2rem;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+button {
+  border: none;
+  border-radius: 999px;
+  background: var(--button);
+  color: #082f49;
+  font-weight: 700;
+  padding: 0.9rem 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+button:hover {
+  background: var(--button-hover);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
