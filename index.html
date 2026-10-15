@@ -8,7 +8,7 @@
       content="A free, open-source voice translator for Indonesian, Arabic, English, Chinese, Korean, and Japanese."
     />
     <meta name="theme-color" content="#111714" />
-    <title>V.O.U — Voice translator</title>
+    <title>V.O.U — Voice of Us</title>
     <link rel="stylesheet" href="app.css?v=2" />
     <script src="app.js?v=3" defer></script>
   </head>
@@ -16,27 +16,16 @@
     <main class="app-shell">
       <header class="topbar">
         <a class="brand" href="./" aria-label="V.O.U home">
-          <span class="brand-mark" aria-hidden="true">v.</span>
           <span>v.o.u</span>
         </a>
-        <span class="topbar-note">A little closer, in any language.</span>
+        <span class="topbar-note">Your Voice, Understood</span>
       </header>
-
-      <section class="translator" aria-labelledby="page-title">
-        <div class="intro">
-          <p class="eyebrow"><span></span> YOUR VOICE, UNDERSTOOD</p>
-          <h1 id="page-title">Say it your way.</h1>
-          <p class="intro-copy">
-            Speak or type to translate. Start with Indonesian and Arabic, or
-            choose another language.
-          </p>
-        </div>
 
         <div class="language-bar" aria-label="Translation languages">
           <label class="language-select">
-            <span class="sr-only">Translate from</span>
+            <span class="sr-only">from</span>
             <select id="source-language" aria-label="Translate from">
-              <option value="id">Bahasa Indonesia</option>
+              <option value="id">Indonesia</option>
               <option value="ar">العربية</option>
               <option value="en">English</option>
               <option value="zh">中文</option>
@@ -56,10 +45,10 @@
             </svg>
           </button>
           <label class="language-select">
-            <span class="sr-only">Translate to</span>
+            <span class="sr-only">to</span>
             <select id="target-language" aria-label="Translate to">
               <option value="ar">العربية</option>
-              <option value="id">Bahasa Indonesia</option>
+              <option value="id">Indonesia</option>
               <option value="en">English</option>
               <option value="zh">中文</option>
               <option value="ko">한국어</option>
@@ -71,7 +60,7 @@
         <div class="translation-grid">
           <section class="text-card input-card" aria-label="Text to translate">
             <div class="card-heading">
-              <span id="source-label">Bahasa Indonesia</span>
+              <span id="source-label">Indonesia</span>
               <span class="card-hint">YOU SAY</span>
             </div>
             <textarea
@@ -158,20 +147,16 @@
         </div>
 
         <details class="settings">
-          <summary>Translation settings</summary>
+          <summary>Translation Info</summary>
           <div class="settings-fields">
             <p>
-              Free translation is provided by MyMemory and is limited to about
-              5,000 characters per day. Text is sent to their service for
-              translation; avoid entering sensitive information.
+              VOU is provided by MyMemory. 5,000 characters per day.
             </p>
           </div>
         </details>
 
         <footer class="app-footer">
-          <span>Free &amp; open source</span>
-          <span class="footer-dot" aria-hidden="true"></span>
-          <span>Dark mode by default. Voice recognition uses your browser; translation uses MyMemory.</span>
+          <span>irsamrhmtysf.github.io</span>
         </footer>
       </section>
     </main>
