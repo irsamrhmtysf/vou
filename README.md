@@ -13,9 +13,10 @@ python -m http.server 8000
 ```
 
 Then open [http://localhost:8000](http://localhost:8000) in a supported browser.
-Choose the languages, type a phrase, or select the microphone and speak. A
-voice transcript is translated automatically; typed text is translated with
-the **Translate** button. Use the speaker button to hear the result.
+Choose the languages, then type a phrase and pause briefly for it to translate
+automatically, or select the microphone and speak. The **Translate** button is
+still available for an immediate translation. Use the speaker button to hear
+the result.
 
 Voice input uses the browser's Web Speech API and is currently supported mainly
 by Chromium-based browsers. Microphone access requires permission and HTTPS or
