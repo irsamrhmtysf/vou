@@ -9,7 +9,7 @@
     />
     <meta name="theme-color" content="#111714" />
     <title>VOU Voice of Us</title>
-    <link rel="stylesheet" href="app.css?v=4" />
+    <link rel="stylesheet" href="app.css?v=5" />
     <script src="app.js?v=5" defer></script>
   </head>
   <body>
@@ -57,30 +57,6 @@
               <option value="ja">日本語</option>
             </select>
           </label>
-          <button
-            class="icon-button clear-button"
-            id="clear-button"
-            type="button"
-            aria-label="Clear text"
-            title="Clear text"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m6 6 12 12M18 6 6 18" />
-            </svg>
-          </button>
-          <button
-            class="icon-button translate-button"
-            id="translate-button"
-            type="button"
-            aria-label="Translate now"
-            title="Translate now"
-          >
-            <span class="sr-only">Translate</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3.5 5.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11h-10a2 2 0 0 1-2-2zM8.5 8.5h10a2 2 0 0 1 2 2v8h-11a2 2 0 0 1-2-2zM6.5 8h6M9.5 7v2m-2 3 2 2 2-2m-2 2v2" />
-              <text x="14" y="17" fill="currentColor" stroke="none" font-size="6" font-weight="700">文</text>
-            </svg>
-          </button>
         </div>
 
         <div class="translation-grid">
@@ -95,18 +71,44 @@
             ></textarea>
             <div class="card-footer">
               <span class="character-count" id="character-count">0 / 1000</span>
-              <button
-                class="icon-button listen-button"
-                id="listen-button"
-                type="button"
-                aria-label="Start voice input"
-                title="Start voice input"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="9" y="2.5" width="6" height="12" rx="3" />
-                  <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5m-4 0h8" />
-                </svg>
-              </button>
+              <div class="input-actions">
+                <button
+                  class="icon-button listen-button"
+                  id="listen-button"
+                  type="button"
+                  aria-label="Start voice input"
+                  title="Start voice input"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="9" y="2.5" width="6" height="12" rx="3" />
+                    <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5m-4 0h8" />
+                  </svg>
+                </button>
+                <button
+                  class="icon-button clear-button"
+                  id="clear-button"
+                  type="button"
+                  aria-label="Clear text"
+                  title="Clear text"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m6 6 12 12M18 6 6 18" />
+                  </svg>
+                </button>
+                <button
+                  class="icon-button translate-button"
+                  id="translate-button"
+                  type="button"
+                  aria-label="Translate now"
+                  title="Translate now"
+                >
+                  <span class="sr-only">Translate</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3.5 5.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11h-10a2 2 0 0 1-2-2zM8.5 8.5h10a2 2 0 0 1 2 2v8h-11a2 2 0 0 1-2-2zM6.5 8h6M9.5 7v2m-2 3 2 2 2-2m-2 2v2" />
+                    <text x="14" y="17" fill="currentColor" stroke="none" font-size="6" font-weight="700">文</text>
+                  </svg>
+                </button>
+              </div>
             </div>
           </section>
 
