@@ -1,10 +1,10 @@
 const languages = {
-  id: { label: "Bahasa Indonesia", speech: "id-ID" },
-  ar: { label: "العربية", speech: "ar-SA" },
-  en: { label: "English", speech: "en-US" },
-  zh: { label: "中文", speech: "zh-CN" },
-  ko: { label: "한국어", speech: "ko-KR" },
-  ja: { label: "日本語", speech: "ja-JP" },
+  id: { label: "Bahasa Indonesia", speech: "id-ID", translation: "id" },
+  ar: { label: "العربية", speech: "ar-SA", translation: "ar" },
+  en: { label: "English", speech: "en-US", translation: "en" },
+  zh: { label: "中文", speech: "zh-CN", translation: "zh-CN" },
+  ko: { label: "한국어", speech: "ko-KR", translation: "ko" },
+  ja: { label: "日本語", speech: "ja-JP", translation: "ja" },
 };
 
 const sourceLanguage = document.querySelector("#source-language");
@@ -19,8 +19,6 @@ const translateButton = document.querySelector("#translate-button");
 const listenButton = document.querySelector("#listen-button");
 const speakButton = document.querySelector("#speak-button");
 const copyButton = document.querySelector("#copy-button");
-const serverUrl = document.querySelector("#server-url");
-const apiKey = document.querySelector("#api-key");
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -64,21 +62,6 @@ function showTranslation(text) {
   copyButton.disabled = !hasTranslation;
 }
 
-function getTranslateUrl() {
-  const base = serverUrl.value.trim().replace(/\/+$/, "");
-  if (!base) {
-    throw new Error("Enter a LibreTranslate server URL in translation settings.");
-  }
-
-  const url = new URL(base);
-  const isLocalhost = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
-  if (url.protocol !== "https:" && !(url.protocol === "http:" && isLocalhost)) {
-    throw new Error("Use an HTTPS server URL, or HTTP on localhost.");
-  }
-
-  return `${base.endsWith("/translate") ? base : `${base}/translate`}`;
-}
-
 async function translate() {
   const text = sourceText.value.trim();
   if (!text) {
@@ -94,36 +77,40 @@ async function translate() {
   setStatus("Translating…", "working");
 
   try {
-    const requestUrl = getTranslateUrl();
-    const payload = {
+    const requestUrl = new URL("https://api.mymemory.translated.net/get");
+    requestUrl.search = new URLSearchParams({
       q: text,
-      source: sourceLanguage.value,
-      target: targetLanguage.value,
-      format: "text",
-    };
-    if (apiKey.value.trim()) {
-      payload.api_key = apiKey.value.trim();
-    }
-
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      langpair: `${languages[sourceLanguage.value].translation}|${
+        languages[targetLanguage.value].translation
+      }`,
     });
+    const response = await fetch(requestUrl);
     const result = await response.json();
 
-    if (!response.ok || typeof result.translatedText !== "string") {
+    if (result.quotaFinished) {
+      throw new Error("The free daily translation limit has been reached. Try again tomorrow.");
+    }
+    if (!response.ok || result.responseStatus !== 200) {
       throw new Error(
-        result.error || `Translation server returned an error (${response.status}).`,
+        result.responseDetails ||
+          `Translation service returned an error (${result.responseStatus || response.status}).`,
       );
+    }
+    if (typeof result.responseData?.translatedText !== "string") {
+      throw new Error("The translation service returned an invalid response.");
     }
     if (currentRequest !== requestNumber) return;
 
-    showTranslation(result.translatedText);
+    showTranslation(result.responseData.translatedText);
     setStatus("Translation ready.");
   } catch (error) {
     if (currentRequest !== requestNumber) return;
-    setStatus(error.message || "Could not reach the translation server.", "error");
+    setStatus(
+      error instanceof TypeError
+        ? "Could not reach the translation service. Check your connection and try again."
+        : error.message,
+      "error",
+    );
   } finally {
     if (currentRequest === requestNumber) {
       translateButton.disabled = false;
