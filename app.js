@@ -32,6 +32,7 @@ const AUTO_TRANSLATE_DELAY = 900;
 
 let recognition;
 let requestNumber = 0;
+let speechPlaybackId = 0;
 let speechPrefix = "";
 let lastTranslation = "";
 let autoTranslateTimer;
@@ -345,10 +346,25 @@ speakButton.addEventListener("click", () => {
     setStatus("Speech playback is not supported in this browser.");
     return;
   }
+  const playbackId = ++speechPlaybackId;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(lastTranslation);
   utterance.lang = languages[targetLanguage.value].speech;
-  utterance.onerror = () => setStatus("Could not play the translation aloud.", "error");
+  utterance.onstart = () => {
+    if (playbackId !== speechPlaybackId) return;
+    speakButton.classList.add("is-speaking");
+    setStatus("Speaking translation…", "working");
+  };
+  utterance.onend = () => {
+    if (playbackId !== speechPlaybackId) return;
+    speakButton.classList.remove("is-speaking");
+    setStatus("Playback finished.");
+  };
+  utterance.onerror = () => {
+    if (playbackId !== speechPlaybackId) return;
+    speakButton.classList.remove("is-speaking");
+    setStatus("Could not play the translation aloud.", "error");
+  };
   window.speechSynthesis.speak(utterance);
 });
 
