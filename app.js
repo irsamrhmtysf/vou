@@ -1,16 +1,22 @@
 const languages = {
-  id: { label: "Bahasa Indonesia", speech: "id-ID", translation: "id" },
-  ar: { label: "العربية", speech: "ar-SA", translation: "ar" },
-  en: { label: "English", speech: "en-US", translation: "en" },
-  zh: { label: "中文", speech: "zh-CN", translation: "zh-CN" },
-  ko: { label: "한국어", speech: "ko-KR", translation: "ko" },
-  ja: { label: "日本語", speech: "ja-JP", translation: "ja" },
+  id: { label: "Indonesia", flag: "id", speech: "id-ID", translation: "id" },
+  ar: { label: "العربية", flag: "eg", speech: "ar-EG", translation: "ar" },
+  en: { label: "English", flag: "us", speech: "en-US", translation: "en" },
+  zh: { label: "中文", flag: "cn", speech: "zh-CN", translation: "zh-CN" },
+  ko: { label: "한국어", flag: "kr", speech: "ko-KR", translation: "ko" },
+  ja: { label: "日本語", flag: "jp", speech: "ja-JP", translation: "ja" },
 };
 
+const MAX_INPUT_LENGTH = 1000;
+const MAX_QUERY_LENGTH = 500;
 const sourceLanguage = document.querySelector("#source-language");
 const targetLanguage = document.querySelector("#target-language");
 const sourceText = document.querySelector("#source-text");
 const output = document.querySelector("#translation-output");
+const sourceFlag = document.querySelector("#source-flag");
+const targetFlag = document.querySelector("#target-flag");
+const sourceCardFlag = document.querySelector("#source-card-flag");
+const targetCardFlag = document.querySelector("#target-card-flag");
 const sourceLabel = document.querySelector("#source-label");
 const targetLabel = document.querySelector("#target-label");
 const characterCount = document.querySelector("#character-count");
@@ -38,6 +44,10 @@ function setStatus(message, state = "ready") {
 function updateLanguages() {
   const source = languages[sourceLanguage.value];
   const target = languages[targetLanguage.value];
+  sourceFlag.className = `language-flag flag-${source.flag}`;
+  sourceCardFlag.className = `language-flag flag-${source.flag}`;
+  targetFlag.className = `language-flag flag-${target.flag}`;
+  targetCardFlag.className = `language-flag flag-${target.flag}`;
   sourceLabel.textContent = source.label;
   targetLabel.textContent = target.label;
   sourceText.lang = source.speech;
@@ -46,7 +56,40 @@ function updateLanguages() {
 }
 
 function updateCharacterCount() {
-  characterCount.textContent = `${sourceText.value.length} / 5000`;
+  characterCount.textContent = `${sourceText.value.length} / ${MAX_INPUT_LENGTH}`;
+}
+
+function splitIntoChunks(text, maxLength) {
+  const chunks = [];
+  let remaining = text;
+
+  while (remaining.length > maxLength) {
+    let splitAt = Math.max(
+      remaining.lastIndexOf(" ", maxLength),
+      remaining.lastIndexOf("\n", maxLength),
+    );
+    if (splitAt <= 0) splitAt = maxLength;
+    if (
+      splitAt < remaining.length &&
+      /[\uD800-\uDBFF]/.test(remaining[splitAt - 1]) &&
+      /[\uDC00-\uDFFF]/.test(remaining[splitAt])
+    ) {
+      splitAt -= 1;
+    }
+
+    const chunk = remaining.slice(0, splitAt);
+    const trailingWhitespace = chunk.match(/\s+$/)?.[0] || "";
+    const next = remaining.slice(splitAt);
+    const leadingWhitespace = next.match(/^\s+/)?.[0] || "";
+    chunks.push({
+      text: chunk.slice(0, chunk.length - trailingWhitespace.length),
+      separator: trailingWhitespace + leadingWhitespace,
+    });
+    remaining = next.slice(leadingWhitespace.length);
+  }
+
+  if (remaining) chunks.push({ text: remaining, separator: "" });
+  return chunks;
 }
 
 function showTranslation(text) {
@@ -78,35 +121,50 @@ async function translate() {
   const currentRequest = ++requestNumber;
   translateButton.disabled = true;
   translateButton.querySelector("span").textContent = "Translating";
+  translateButton.setAttribute("aria-label", "Translating");
+  translateButton.title = "Translating";
   showTranslation("");
-  setStatus("Translating…", "working");
+  const chunks = splitIntoChunks(text, MAX_QUERY_LENGTH);
+  const translations = [];
 
   try {
-    const requestUrl = new URL("https://api.mymemory.translated.net/get");
-    requestUrl.search = new URLSearchParams({
-      q: text,
-      langpair: `${languages[sourceLanguage.value].translation}|${
-        languages[targetLanguage.value].translation
-      }`,
-    });
-    const response = await fetch(requestUrl);
-    const result = await response.json();
-
-    if (result.quotaFinished) {
-      throw new Error("The free daily translation limit has been reached. Try again tomorrow.");
-    }
-    if (!response.ok || result.responseStatus !== 200) {
-      throw new Error(
-        result.responseDetails ||
-          `Translation service returned an error (${result.responseStatus || response.status}).`,
+    for (let index = 0; index < chunks.length; index += 1) {
+      if (currentRequest !== requestNumber) return;
+      setStatus(
+        chunks.length > 1
+          ? `Translating part ${index + 1} of ${chunks.length}…`
+          : "Translating…",
+        "working",
       );
-    }
-    if (typeof result.responseData?.translatedText !== "string") {
-      throw new Error("The translation service returned an invalid response.");
-    }
-    if (currentRequest !== requestNumber) return;
+      const requestUrl = new URL("https://api.mymemory.translated.net/get");
+      requestUrl.search = new URLSearchParams({
+        q: chunks[index].text,
+        langpair: `${languages[sourceLanguage.value].translation}|${
+          languages[targetLanguage.value].translation
+        }`,
+      });
+      const response = await fetch(requestUrl);
+      const result = await response.json();
 
-    showTranslation(result.responseData.translatedText);
+      if (currentRequest !== requestNumber) return;
+      if (result.quotaFinished) {
+        throw new Error("The free daily translation limit has been reached. Try again tomorrow.");
+      }
+      if (!response.ok || result.responseStatus !== 200) {
+        throw new Error(
+          result.responseDetails ||
+            `Translation service returned an error (${result.responseStatus || response.status}).`,
+        );
+      }
+      if (typeof result.responseData?.translatedText !== "string") {
+        throw new Error("The translation service returned an invalid response.");
+      }
+      translations.push(result.responseData.translatedText);
+    }
+
+    showTranslation(
+      translations.map((translation, index) => translation + chunks[index].separator).join(""),
+    );
     setStatus("Translation ready.");
   } catch (error) {
     if (currentRequest !== requestNumber) return;
@@ -120,6 +178,8 @@ async function translate() {
     if (currentRequest === requestNumber) {
       translateButton.disabled = false;
       translateButton.querySelector("span").textContent = "Translate";
+      translateButton.setAttribute("aria-label", "Translate now");
+      translateButton.title = "Translate now";
     }
   }
 }
@@ -130,6 +190,8 @@ function scheduleAutoTranslate() {
   requestNumber += 1;
   translateButton.disabled = false;
   translateButton.querySelector("span").textContent = "Translate";
+  translateButton.setAttribute("aria-label", "Translate now");
+  translateButton.title = "Translate now";
 
   if (recognition) return;
   if (!sourceText.value.trim()) {
@@ -163,13 +225,23 @@ function startListening() {
     listenButton.classList.add("is-listening");
     listenButton.setAttribute("aria-label", "Stop voice input");
     listenButton.title = "Stop voice input";
-    setStatus("Listening… speak now.", "working");
+    setStatus(
+      sourceLanguage.value === "ar"
+        ? "Listening for Arabic… speak now."
+        : "Listening… speak now.",
+      "working",
+    );
   };
 
   recognition.onresult = (event) => {
     const parts = Array.from(event.results, (result) => result[0].transcript);
     const transcript = parts.join("").trim();
-    sourceText.value = [speechPrefix, transcript].filter(Boolean).join(" ");
+    let text = [speechPrefix, transcript].filter(Boolean).join(" ");
+    if (text.length > MAX_INPUT_LENGTH) {
+      text = text.slice(0, MAX_INPUT_LENGTH);
+      if (/[\uD800-\uDBFF]$/.test(text)) text = text.slice(0, -1);
+    }
+    sourceText.value = text;
     updateCharacterCount();
   };
 
@@ -177,6 +249,7 @@ function startListening() {
     if (event.error === "aborted") return;
     const messages = {
       "not-allowed": "Allow microphone access in your browser to use voice input.",
+      "language-not-supported": "Voice input is not available for this language in your browser. Try another browser.",
       "no-speech": "No speech detected. Try again when you're ready.",
       "audio-capture": "No microphone was found. Check your microphone connection.",
       "network": "Voice recognition needs an internet connection in this browser.",
@@ -240,6 +313,8 @@ document.querySelector("#swap-languages").addEventListener("click", () => {
   requestNumber += 1;
   translateButton.disabled = false;
   translateButton.querySelector("span").textContent = "Translate";
+  translateButton.setAttribute("aria-label", "Translate now");
+  translateButton.title = "Translate now";
   updateCharacterCount();
   updateLanguages();
   if (translatedText) {
@@ -259,6 +334,8 @@ document.querySelector("#clear-button").addEventListener("click", () => {
   updateCharacterCount();
   translateButton.disabled = false;
   translateButton.querySelector("span").textContent = "Translate";
+  translateButton.setAttribute("aria-label", "Translate now");
+  translateButton.title = "Translate now";
   setStatus("Ready when you are.");
   sourceText.focus();
 });

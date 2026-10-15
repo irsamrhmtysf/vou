@@ -70,11 +70,16 @@ summary:focus-visible {
 }
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   height: 86px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(220, 240, 225, 0.08);
+  background: rgba(17, 23, 20, 0.96);
+  backdrop-filter: blur(14px);
 }
 
 .brand {
@@ -154,21 +159,102 @@ h1 {
 
 .language-bar {
   display: grid;
-  grid-template-columns: 1fr 48px 1fr;
+  grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr) 40px 40px;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   margin-bottom: 12px;
 }
 
 .language-select {
+  position: relative;
   display: block;
   min-width: 0;
+}
+
+.language-flag {
+  position: relative;
+  display: inline-block;
+  width: 22px;
+  height: 15px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  vertical-align: middle;
+}
+
+.language-select > .language-flag {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.flag-id {
+  background: linear-gradient(to bottom, #e33846 0 50%, #fff 50% 100%);
+}
+
+.flag-eg {
+  background: linear-gradient(to bottom, #ce3546 0 33.3%, #fff 33.3% 66.6%, #171b18 66.6% 100%);
+}
+
+.flag-eg::after {
+  position: absolute;
+  top: 4px;
+  left: 9px;
+  width: 3px;
+  height: 5px;
+  border-radius: 1px;
+  background: #c59a42;
+  content: "";
+}
+
+.flag-us {
+  background: repeating-linear-gradient(to bottom, #c93b4d 0 2px, #fff 2px 4px);
+}
+
+.flag-us::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 8px;
+  background: #31518a;
+  content: "";
+}
+
+.flag-cn {
+  background: #d9363e;
+}
+
+.flag-cn::after {
+  position: absolute;
+  top: -2px;
+  left: 3px;
+  color: #f7d45b;
+  content: "★";
+  font-size: 9px;
+  line-height: 15px;
+}
+
+.flag-kr {
+  background:
+    radial-gradient(ellipse at 50% 38%, #ce3546 0 24%, transparent 26%),
+    radial-gradient(ellipse at 50% 62%, #31518a 0 24%, transparent 26%),
+    #fff;
+}
+
+.flag-jp {
+  background: radial-gradient(circle at center, #c93b4d 0 4px, transparent 4.5px), #fff;
 }
 
 .language-select select {
   width: 100%;
   height: 48px;
-  padding: 0 42px 0 16px;
+  padding: 0 42px 0 46px;
   appearance: none;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -211,6 +297,64 @@ h1 {
 .swap-button svg {
   width: 17px;
   height: 17px;
+}
+
+.card-language {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clear-button,
+.translate-button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
+}
+
+.clear-button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: #b2c0b7;
+}
+
+.clear-button:hover:not(:disabled) {
+  border-color: #744740;
+  background: #382723;
+  color: #f09a91;
+}
+
+.translate-button {
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: var(--white);
+}
+
+.translate-button:hover:not(:disabled) {
+  border-color: #3f735b;
+  background: #3f735b;
+}
+
+.clear-button svg,
+.translate-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.translate-button:disabled {
+  cursor: progress;
+  opacity: 0.68;
+}
+
+.translate-button:disabled svg {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .translation-grid {
@@ -366,61 +510,6 @@ textarea:focus-visible {
   }
 }
 
-.action-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 15px;
-  padding: 16px 0 0;
-}
-
-.clear-button {
-  padding: 10px 6px;
-  border: 0;
-  background: transparent;
-  color: #a4b2a9;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.clear-button:hover {
-  color: var(--ink);
-}
-
-.translate-button {
-  display: inline-flex;
-  min-width: 146px;
-  height: 46px;
-  align-items: center;
-  justify-content: center;
-  gap: 11px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--green);
-  color: var(--white);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 140ms ease, transform 140ms ease;
-}
-
-.translate-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: var(--green-dark);
-}
-
-.translate-button:disabled {
-  cursor: progress;
-  opacity: 0.68;
-}
-
-.translate-button svg {
-  width: 16px;
-  height: 16px;
-}
-
 .settings {
   margin-top: 24px;
   border-top: 1px solid rgba(220, 240, 225, 0.08);
@@ -510,7 +599,7 @@ textarea:focus-visible {
   }
 
   .topbar {
-    height: 68px;
+    height: 60px;
   }
 
   .topbar-note {
@@ -535,14 +624,14 @@ textarea:focus-visible {
   }
 
   .language-bar {
-    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr) 36px 36px;
     gap: 4px;
   }
 
   .language-select select {
     height: 44px;
     padding-right: 30px;
-    padding-left: 11px;
+    padding-left: 36px;
     background-position:
       calc(100% - 15px) 19px,
       calc(100% - 11px) 19px,
@@ -551,8 +640,21 @@ textarea:focus-visible {
   }
 
   .swap-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .language-select > .language-flag {
+    left: 9px;
+    width: 20px;
+    height: 14px;
+  }
+
+  .clear-button,
+  .translate-button {
     width: 36px;
     height: 36px;
+    border-radius: 10px;
   }
 
   .translation-grid {

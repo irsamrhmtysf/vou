@@ -9,8 +9,8 @@
     />
     <meta name="theme-color" content="#111714" />
     <title>V.O.U — Voice of Us</title>
-    <link rel="stylesheet" href="app.css?v=2" />
-    <script src="app.js?v=3" defer></script>
+    <link rel="stylesheet" href="app.css?v=3" />
+    <script src="app.js?v=4" defer></script>
   </head>
   <body>
     <main class="app-shell">
@@ -24,6 +24,7 @@
         <div class="language-bar" aria-label="Translation languages">
           <label class="language-select">
             <span class="sr-only">from</span>
+            <span class="language-flag flag-id" id="source-flag" aria-hidden="true"></span>
             <select id="source-language" aria-label="Translate from">
               <option value="id">Indonesia</option>
               <option value="ar">العربية</option>
@@ -46,6 +47,7 @@
           </button>
           <label class="language-select">
             <span class="sr-only">to</span>
+            <span class="language-flag flag-eg" id="target-flag" aria-hidden="true"></span>
             <select id="target-language" aria-label="Translate to">
               <option value="ar">العربية</option>
               <option value="id">Indonesia</option>
@@ -55,24 +57,50 @@
               <option value="ja">日本語</option>
             </select>
           </label>
+          <button
+            class="icon-button clear-button"
+            id="clear-button"
+            type="button"
+            aria-label="Clear text"
+            title="Clear text"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16m-10 4v7m4-7v7M6 7l1 14h10l1-14M9 7V4h6v3" />
+            </svg>
+          </button>
+          <button
+            class="icon-button translate-button"
+            id="translate-button"
+            type="button"
+            aria-label="Translate now"
+            title="Translate now"
+          >
+            <span class="sr-only">Translate</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-6-6 6 6-6 6" />
+            </svg>
+          </button>
         </div>
 
         <div class="translation-grid">
           <section class="text-card input-card" aria-label="Text to translate">
             <div class="card-heading">
-              <span id="source-label">Indonesia</span>
+              <span class="card-language">
+                <span class="language-flag flag-id" id="source-card-flag" aria-hidden="true"></span>
+                <span id="source-label">Indonesia</span>
+              </span>
               <span class="card-hint">YOU SAY</span>
             </div>
             <textarea
               id="source-text"
               rows="5"
-              maxlength="5000"
+              maxlength="1000"
               placeholder="Type something or tap the microphone to speak..."
               aria-label="Text to translate"
               dir="auto"
             ></textarea>
             <div class="card-footer">
-              <span class="character-count" id="character-count">0 / 5000</span>
+              <span class="character-count" id="character-count">0 / 1000</span>
               <button
                 class="icon-button listen-button"
                 id="listen-button"
@@ -90,7 +118,10 @@
 
           <section class="text-card output-card" aria-label="Translation">
             <div class="card-heading">
-              <span id="target-label">العربية</span>
+              <span class="card-language">
+                <span class="language-flag flag-eg" id="target-card-flag" aria-hidden="true"></span>
+                <span id="target-label">العربية</span>
+              </span>
               <span class="card-hint">TRANSLATION</span>
             </div>
             <div
@@ -136,21 +167,12 @@
           </section>
         </div>
 
-        <div class="action-row">
-          <button class="clear-button" id="clear-button" type="button">Clear</button>
-          <button class="translate-button" id="translate-button" type="button">
-            <span>Translate</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 12h14m-6-6 6 6-6 6" />
-            </svg>
-          </button>
-        </div>
-
         <details class="settings">
           <summary>Translation Info</summary>
           <div class="settings-fields">
             <p>
-              VOU is provided by MyMemory. 5,000 characters per day.
+              VOU uses MyMemory. Up to 1,000 characters per entry, sent in
+              500-character parts. Free daily limit: 5,000 characters.
             </p>
           </div>
         </details>
