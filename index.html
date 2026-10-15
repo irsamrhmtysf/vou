@@ -7,7 +7,7 @@
       name="description"
       content="A free, open-source voice translator for Indonesian, Arabic, English, Chinese, Korean, and Japanese."
     />
-    <meta name="theme-color" content="#f6f7f4" />
+    <meta name="theme-color" content="#111714" />
     <title>V.O.U — Voice translator</title>
     <link rel="stylesheet" href="app.css" />
     <script src="app.js" defer></script>
@@ -160,28 +160,10 @@
         <details class="settings">
           <summary>Translation settings</summary>
           <div class="settings-fields">
-            <label>
-              LibreTranslate server
-              <input
-                id="server-url"
-                type="url"
-                value="https://translate.argosopentech.com"
-                placeholder="https://your-libretranslate-server"
-                autocomplete="url"
-              />
-            </label>
-            <label>
-              API key <span class="optional-label">(if required)</span>
-              <input
-                id="api-key"
-                type="password"
-                placeholder="Only kept for this session"
-                autocomplete="off"
-              />
-            </label>
             <p>
-              Uses LibreTranslate. The server may be public or self-hosted; any
-              text you translate is sent to that server.
+              Free translation is provided by MyMemory and is limited to about
+              5,000 characters per day. Text is sent to their service for
+              translation; avoid entering sensitive information.
             </p>
           </div>
         </details>
@@ -189,7 +171,7 @@
         <footer class="app-footer">
           <span>Free &amp; open source</span>
           <span class="footer-dot" aria-hidden="true"></span>
-          <span>Voice recognition uses your browser; text goes to your chosen server.</span>
+          <span>Dark mode by default. Voice recognition uses your browser; translation uses MyMemory.</span>
         </footer>
       </section>
     </main>

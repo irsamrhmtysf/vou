@@ -23,26 +23,20 @@ localhost. If voice input is unavailable, typing and translation still work.
 
 ## Translation service
 
-Text translation uses the open-source [LibreTranslate](https://libretranslate.com/)
-API. The app starts with a public LibreTranslate server, which may be busy,
-unavailable, or require an API key. Open **Translation settings** to enter a
-different server URL and, if needed, an API key. For more control, run your own
-LibreTranslate server; for example:
+Text translation uses the free [MyMemory](https://mymemory.translated.net/)
+API, which works directly from the GitHub Pages app without a server or API key.
+The free service is limited to about 5,000 characters per day and may be
+temporarily unavailable. Text is sent to MyMemory for translation; do not
+translate sensitive information.
 
-```sh
-docker run --rm -p 5000:5000 libretranslate/libretranslate
-```
-
-Then set the server URL to `http://localhost:5000`. Speech recognition is
-handled by the browser and may use the browser vendor's speech service. The
-resulting text is sent to the selected translation server; check both services'
-policies before translating private information.
+Speech recognition is handled by the browser and may use the browser vendor's
+speech service.
 
 ## Languages
 
 Indonesian (`id`), Arabic (`ar`), English (`en`), Chinese (`zh`), Korean (`ko`),
-and Japanese (`ja`). Actual language-pair availability depends on the selected
-LibreTranslate server and its installed translation models.
+and Japanese (`ja`). Language-pair availability and translation quality depend
+on the external translation service.
 
 ## License
 
