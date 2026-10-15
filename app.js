@@ -15,10 +15,12 @@ const sourceText = document.querySelector("#source-text");
 const output = document.querySelector("#translation-output");
 const sourceFlag = document.querySelector("#source-flag");
 const targetFlag = document.querySelector("#target-flag");
-const sourceCardFlag = document.querySelector("#source-card-flag");
-const targetCardFlag = document.querySelector("#target-card-flag");
-const sourceLabel = document.querySelector("#source-label");
-const targetLabel = document.querySelector("#target-label");
+const sourceLanguageButton = document.querySelector("#source-language-button");
+const targetLanguageButton = document.querySelector("#target-language-button");
+const sourceLanguageValue = document.querySelector("#source-language-value");
+const targetLanguageValue = document.querySelector("#target-language-value");
+const sourceLanguageOptions = document.querySelector("#source-language-options");
+const targetLanguageOptions = document.querySelector("#target-language-options");
 const characterCount = document.querySelector("#character-count");
 const statusMessage = document.querySelector("#status-message");
 const translateButton = document.querySelector("#translate-button");
@@ -46,14 +48,99 @@ function updateLanguages() {
   const source = languages[sourceLanguage.value];
   const target = languages[targetLanguage.value];
   sourceFlag.className = `language-flag flag-${source.flag}`;
-  sourceCardFlag.className = `language-flag flag-${source.flag}`;
   targetFlag.className = `language-flag flag-${target.flag}`;
-  targetCardFlag.className = `language-flag flag-${target.flag}`;
-  sourceLabel.textContent = source.label;
-  targetLabel.textContent = target.label;
+  sourceLanguageValue.textContent = source.label;
+  targetLanguageValue.textContent = target.label;
+  updateLanguageOptions(sourceLanguage, sourceLanguageOptions);
+  updateLanguageOptions(targetLanguage, targetLanguageOptions);
   sourceText.lang = source.speech;
   output.lang = target.speech;
   output.dir = targetLanguage.value === "ar" ? "rtl" : "auto";
+}
+
+function updateLanguageOptions(select, listbox) {
+  for (const option of listbox.children) {
+    option.setAttribute("aria-selected", String(option.dataset.value === select.value));
+  }
+}
+
+function populateLanguageOptions(select, listbox) {
+  for (const option of select.options) {
+    const item = document.createElement("div");
+    item.className = "language-option";
+    item.setAttribute("role", "option");
+    item.setAttribute("tabindex", "-1");
+    item.dataset.value = option.value;
+
+    const flag = document.createElement("span");
+    flag.className = `language-flag flag-${languages[option.value].flag}`;
+    flag.setAttribute("aria-hidden", "true");
+    item.append(flag, document.createTextNode(option.textContent));
+    listbox.append(item);
+  }
+}
+
+function closeLanguagePicker(button, listbox) {
+  button.setAttribute("aria-expanded", "false");
+  listbox.hidden = true;
+}
+
+function openLanguagePicker(button, listbox, focusSelected = false) {
+  button.setAttribute("aria-expanded", "true");
+  listbox.hidden = false;
+  if (focusSelected) {
+    listbox.querySelector('[aria-selected="true"]')?.focus();
+  }
+}
+
+function setupLanguagePicker(select, button, listbox) {
+  populateLanguageOptions(select, listbox);
+
+  button.addEventListener("click", () => {
+    if (listbox.hidden) {
+      openLanguagePicker(button, listbox, true);
+    } else {
+      closeLanguagePicker(button, listbox);
+    }
+  });
+
+  button.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      openLanguagePicker(button, listbox, true);
+    }
+  });
+
+  listbox.addEventListener("click", (event) => {
+    const item = event.target.closest(".language-option");
+    if (!item) return;
+    select.value = item.dataset.value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    closeLanguagePicker(button, listbox);
+    button.focus();
+  });
+
+  listbox.addEventListener("keydown", (event) => {
+    const items = Array.from(listbox.children);
+    const index = items.indexOf(document.activeElement);
+    let nextIndex;
+    if (event.key === "ArrowDown") nextIndex = (index + 1) % items.length;
+    if (event.key === "ArrowUp") nextIndex = (index - 1 + items.length) % items.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = items.length - 1;
+
+    if (nextIndex !== undefined) {
+      event.preventDefault();
+      items[nextIndex].focus();
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      document.activeElement.click();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      closeLanguagePicker(button, listbox);
+      button.focus();
+    }
+  });
 }
 
 function updateCharacterCount() {
@@ -278,6 +365,18 @@ function startListening() {
     setStatus(`Could not start voice input: ${error.message}`, "error");
   }
 }
+
+setupLanguagePicker(sourceLanguage, sourceLanguageButton, sourceLanguageOptions);
+setupLanguagePicker(targetLanguage, targetLanguageButton, targetLanguageOptions);
+
+document.addEventListener("click", (event) => {
+  if (!sourceLanguageButton.parentElement.contains(event.target)) {
+    closeLanguagePicker(sourceLanguageButton, sourceLanguageOptions);
+  }
+  if (!targetLanguageButton.parentElement.contains(event.target)) {
+    closeLanguagePicker(targetLanguageButton, targetLanguageOptions);
+  }
+});
 
 sourceLanguage.addEventListener("change", () => {
   if (recognition) recognition.stop();
