@@ -504,9 +504,23 @@ textarea:focus-visible {
   animation: pulse 1.5s ease-out infinite;
 }
 
+.icon-button.is-speaking {
+  border-color: #547562;
+  background: #293d31;
+  color: #a9d1b6;
+  animation: speaking-pulse 1.2s ease-in-out infinite;
+}
+
 @keyframes pulse {
   50% {
     box-shadow: 0 0 0 5px rgba(165, 67, 67, 0.09);
+  }
+}
+
+@keyframes speaking-pulse {
+  50% {
+    box-shadow: 0 0 0 5px rgba(120, 177, 140, 0.14);
+    transform: scale(1.06);
   }
 }
 
