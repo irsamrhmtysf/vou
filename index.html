@@ -9,8 +9,8 @@
     />
     <meta name="theme-color" content="#111714" />
     <title>VOU Voice of Us</title>
-    <link rel="stylesheet" href="app.css?v=5" />
-    <script src="app.js?v=5" defer></script>
+    <link rel="stylesheet" href="app.css?v=6" />
+    <script src="app.js?v=6" defer></script>
   </head>
   <body>
     <main class="app-shell">
@@ -22,10 +22,24 @@
       </header>
 
         <div class="language-bar" aria-label="Translation languages">
-          <label class="language-select">
-            <span class="sr-only">from</span>
+          <div class="language-select">
+            <span class="sr-only" id="source-language-label">from</span>
+            <button
+              class="language-picker-button"
+              id="source-language-button"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-labelledby="source-language-label source-language-value"
+            >
             <span class="language-flag flag-id" id="source-flag" aria-hidden="true"></span>
-            <select id="source-language" aria-label="Translate from">
+              <span id="source-language-value">Indonesia</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+            </button>
+            <div class="language-options" id="source-language-options" role="listbox" aria-labelledby="source-language-label" hidden></div>
+            <select id="source-language" aria-hidden="true" hidden>
               <option value="id">Indonesia</option>
               <option value="ar">العربية</option>
               <option value="en">English</option>
@@ -33,7 +47,7 @@
               <option value="ko">한국어</option>
               <option value="ja">日本語</option>
             </select>
-          </label>
+          </div>
           <button
             class="swap-button"
             id="swap-languages"
@@ -45,10 +59,24 @@
               <path d="M7 7h13m0 0-3-3m3 3-3 3M17 17H4m0 0 3 3m-3-3 3-3" />
             </svg>
           </button>
-          <label class="language-select">
-            <span class="sr-only">to</span>
+          <div class="language-select">
+            <span class="sr-only" id="target-language-label">to</span>
+            <button
+              class="language-picker-button"
+              id="target-language-button"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-labelledby="target-language-label target-language-value"
+            >
             <span class="language-flag flag-eg" id="target-flag" aria-hidden="true"></span>
-            <select id="target-language" aria-label="Translate to">
+              <span id="target-language-value">العربية</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+            </button>
+            <div class="language-options" id="target-language-options" role="listbox" aria-labelledby="target-language-label" hidden></div>
+            <select id="target-language" aria-hidden="true" hidden>
               <option value="ar">العربية</option>
               <option value="id">Indonesia</option>
               <option value="en">English</option>
@@ -56,7 +84,7 @@
               <option value="ko">한국어</option>
               <option value="ja">日本語</option>
             </select>
-          </label>
+          </div>
         </div>
 
         <div class="translation-grid">
