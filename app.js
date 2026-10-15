@@ -22,10 +22,13 @@ const copyButton = document.querySelector("#copy-button");
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
+const AUTO_TRANSLATE_DELAY = 900;
+
 let recognition;
 let requestNumber = 0;
 let speechPrefix = "";
 let lastTranslation = "";
+let autoTranslateTimer;
 
 function setStatus(message, state = "ready") {
   statusMessage.textContent = message;
@@ -63,6 +66,8 @@ function showTranslation(text) {
 }
 
 async function translate() {
+  clearTimeout(autoTranslateTimer);
+  autoTranslateTimer = undefined;
   const text = sourceText.value.trim();
   if (!text) {
     setStatus("Type something or use the microphone first.");
@@ -117,6 +122,24 @@ async function translate() {
       translateButton.querySelector("span").textContent = "Translate";
     }
   }
+}
+
+function scheduleAutoTranslate() {
+  clearTimeout(autoTranslateTimer);
+  autoTranslateTimer = undefined;
+  requestNumber += 1;
+  translateButton.disabled = false;
+  translateButton.querySelector("span").textContent = "Translate";
+
+  if (recognition) return;
+  if (!sourceText.value.trim()) {
+    setStatus("Ready when you are.");
+    return;
+  }
+
+  showTranslation("");
+  setStatus("Translating when you finish typing…", "working");
+  autoTranslateTimer = setTimeout(translate, AUTO_TRANSLATE_DELAY);
 }
 
 function startListening() {
@@ -184,26 +207,19 @@ function startListening() {
 
 sourceLanguage.addEventListener("change", () => {
   if (recognition) recognition.stop();
-  requestNumber += 1;
-  translateButton.disabled = false;
-  translateButton.querySelector("span").textContent = "Translate";
   updateLanguages();
   showTranslation("");
-  setStatus("Ready when you are.");
+  scheduleAutoTranslate();
 });
 
 targetLanguage.addEventListener("change", () => {
-  requestNumber += 1;
-  translateButton.disabled = false;
-  translateButton.querySelector("span").textContent = "Translate";
   updateLanguages();
-  if (lastTranslation) showTranslation("");
-  setStatus("Ready when you are.");
+  scheduleAutoTranslate();
 });
 
 sourceText.addEventListener("input", () => {
   updateCharacterCount();
-  if (lastTranslation) showTranslation("");
+  scheduleAutoTranslate();
 });
 translateButton.addEventListener("click", translate);
 listenButton.addEventListener("click", startListening);
@@ -226,10 +242,16 @@ document.querySelector("#swap-languages").addEventListener("click", () => {
   translateButton.querySelector("span").textContent = "Translate";
   updateCharacterCount();
   updateLanguages();
-  setStatus("Languages swapped.");
+  if (translatedText) {
+    setStatus("Languages swapped.");
+  } else {
+    scheduleAutoTranslate();
+  }
 });
 
 document.querySelector("#clear-button").addEventListener("click", () => {
+  clearTimeout(autoTranslateTimer);
+  autoTranslateTimer = undefined;
   if (recognition) recognition.stop();
   requestNumber += 1;
   sourceText.value = "";
