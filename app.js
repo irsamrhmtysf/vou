@@ -13,6 +13,7 @@ const sourceLanguage = document.querySelector("#source-language");
 const targetLanguage = document.querySelector("#target-language");
 const sourceText = document.querySelector("#source-text");
 const output = document.querySelector("#translation-output");
+const pronunciationOutput = document.querySelector("#pronunciation-output");
 const sourceFlag = document.querySelector("#source-flag");
 const targetFlag = document.querySelector("#target-flag");
 const sourceLanguageButton = document.querySelector("#source-language-button");
@@ -188,12 +189,61 @@ function showTranslation(text) {
     placeholder.className = "placeholder";
     placeholder.textContent = "Your translation will appear here.";
     output.replaceChildren(placeholder);
+    pronunciationOutput.hidden = true;
+    pronunciationOutput.replaceChildren();
   }
   output.dir = targetLanguage.value === "ar" ? "rtl" : "auto";
   lastTranslation = text;
   const hasTranslation = text.length > 0;
   speakButton.disabled = !hasTranslation;
   copyButton.disabled = !hasTranslation;
+}
+
+async function showPronunciation(text, currentRequest) {
+  if (!text.trim() || !["ar", "zh", "ko", "ja"].includes(targetLanguage.value)) {
+    pronunciationOutput.hidden = true;
+    pronunciationOutput.replaceChildren();
+    return;
+  }
+
+  pronunciationOutput.hidden = false;
+  pronunciationOutput.textContent = "Loading pronunciation…";
+  const chunks = splitIntoChunks(text, MAX_QUERY_LENGTH);
+  const pronunciations = [];
+
+  try {
+    for (const chunk of chunks) {
+      const url = new URL("https://translate.googleapis.com/translate_a/single");
+      url.search = new URLSearchParams({
+        client: "gtx",
+        sl: languages[targetLanguage.value].translation,
+        tl: "en",
+        dt: "rm",
+        q: chunk.text,
+      });
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Pronunciation service unavailable");
+      const result = await response.json();
+      const pronunciation = result[0]
+        .filter((segment) => Array.isArray(segment) && typeof segment[3] === "string")
+        .map((segment) => segment[3])
+        .join("");
+      if (!pronunciation) throw new Error("Pronunciation unavailable");
+      pronunciations.push(pronunciation + chunk.separator);
+    }
+
+    if (currentRequest !== requestNumber) return;
+    const label = document.createElement("span");
+    label.className = "pronunciation-label";
+    label.textContent = "Pronunciation";
+    pronunciationOutput.replaceChildren(
+      label,
+      document.createTextNode(pronunciations.join("")),
+    );
+  } catch {
+    if (currentRequest !== requestNumber) return;
+    pronunciationOutput.textContent = "Pronunciation unavailable right now.";
+  }
 }
 
 async function translate() {
@@ -250,10 +300,12 @@ async function translate() {
       translations.push(result.responseData.translatedText);
     }
 
-    showTranslation(
-      translations.map((translation, index) => translation + chunks[index].separator).join(""),
-    );
+    const translatedText = translations
+      .map((translation, index) => translation + chunks[index].separator)
+      .join("");
+    showTranslation(translatedText);
     setStatus("Translation ready.");
+    showPronunciation(translatedText, currentRequest);
   } catch (error) {
     if (currentRequest !== requestNumber) return;
     setStatus(
@@ -403,8 +455,8 @@ document.querySelector("#swap-languages").addEventListener("click", () => {
   targetLanguage.value = previousSource;
 
   const translatedText = lastTranslation;
+  const originalText = sourceText.value;
   if (translatedText) {
-    const originalText = sourceText.value;
     sourceText.value = translatedText;
     showTranslation(originalText);
   } else {
@@ -419,6 +471,7 @@ document.querySelector("#swap-languages").addEventListener("click", () => {
   updateLanguages();
   if (translatedText) {
     setStatus("Languages swapped.");
+    showPronunciation(originalText, requestNumber);
   } else {
     scheduleAutoTranslate();
   }
