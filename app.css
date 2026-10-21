@@ -484,6 +484,28 @@ textarea:focus-visible {
   white-space: pre-wrap;
 }
 
+.pronunciation-output {
+  margin: 0 19px 14px;
+  color: #a9d1b6;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.pronunciation-output[hidden] {
+  display: none;
+}
+
+.pronunciation-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #87968c;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .placeholder {
   color: #87968c;
   font-size: 13px;

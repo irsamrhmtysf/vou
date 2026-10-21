@@ -9,8 +9,8 @@
     />
     <meta name="theme-color" content="#111714" />
     <title>VOU Voice of Us</title>
-    <link rel="stylesheet" href="app.css?v=6" />
-    <script src="app.js?v=6" defer></script>
+    <link rel="stylesheet" href="app.css?v=7" />
+    <script src="app.js?v=7" defer></script>
   </head>
   <body>
     <main class="app-shell">
@@ -151,6 +151,15 @@
             >
               <span class="placeholder">Your translation appear here.</span>
             </div>
+            <div
+              class="pronunciation-output"
+              id="pronunciation-output"
+              role="status"
+              aria-live="polite"
+              lang="en"
+              dir="ltr"
+              hidden
+            ></div>
             <div class="card-footer">
               <span class="status-message" id="status-message">Ready when you are.</span>
               <div class="output-actions">
