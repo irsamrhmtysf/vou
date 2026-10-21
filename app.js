@@ -246,6 +246,72 @@ async function showPronunciation(text, currentRequest) {
   }
 }
 
+async function translateWithMyMemory(chunks, source, target, onProgress) {
+  const translations = [];
+
+  for (let index = 0; index < chunks.length; index += 1) {
+    onProgress(index);
+    const chunk = chunks[index];
+    const url = new URL("https://api.mymemory.translated.net/get");
+    url.search = new URLSearchParams({
+      q: chunk.text,
+      langpair: `${source.translation}|${target.translation}`,
+    });
+    const response = await fetch(url);
+    const result = await response.json();
+
+    if (result.quotaFinished) {
+      throw new Error("MyMemory's free daily limit has been reached.");
+    }
+    if (!response.ok || result.responseStatus !== 200) {
+      throw new Error(
+        result.responseDetails ||
+          `MyMemory returned an error (${result.responseStatus || response.status}).`,
+      );
+    }
+    if (typeof result.responseData?.translatedText !== "string") {
+      throw new Error("MyMemory returned an invalid response.");
+    }
+    translations.push(result.responseData.translatedText);
+  }
+
+  return translations;
+}
+
+async function translateWithGoogle(chunks, source, target, onProgress) {
+  const translations = [];
+
+  for (let index = 0; index < chunks.length; index += 1) {
+    onProgress(index);
+    const chunk = chunks[index];
+    const url = new URL("https://translate.googleapis.com/translate_a/single");
+    url.search = new URLSearchParams({
+      client: "gtx",
+      sl: source.translation,
+      tl: target.translation,
+      dt: "t",
+      q: chunk.text,
+    });
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Google Translate returned an error (${response.status}).`);
+    }
+    const result = await response.json();
+    const translatedText = Array.isArray(result[0])
+      ? result[0]
+          .filter((segment) => Array.isArray(segment) && typeof segment[0] === "string")
+          .map((segment) => segment[0])
+          .join("")
+      : "";
+    if (!translatedText) {
+      throw new Error("Google Translate returned an invalid response.");
+    }
+    translations.push(translatedText);
+  }
+
+  return translations;
+}
+
 async function translate() {
   clearTimeout(autoTranslateTimer);
   autoTranslateTimer = undefined;
@@ -263,48 +329,51 @@ async function translate() {
   translateButton.title = "Translating";
   showTranslation("");
   const chunks = splitIntoChunks(text, MAX_QUERY_LENGTH);
-  const translations = [];
+  const source = languages[sourceLanguage.value];
+  const target = languages[targetLanguage.value];
+  let translations;
+  let usedFallback = false;
+  const updateProgress = (provider) => (index) => {
+    setStatus(
+      chunks.length > 1
+        ? `${provider}: translating part ${index + 1} of ${chunks.length}…`
+        : `${provider}: translating…`,
+      "working",
+    );
+  };
 
   try {
-    for (let index = 0; index < chunks.length; index += 1) {
-      if (currentRequest !== requestNumber) return;
-      setStatus(
-        chunks.length > 1
-          ? `Translating part ${index + 1} of ${chunks.length}…`
-          : "Translating…",
-        "working",
+    try {
+      translations = await translateWithMyMemory(
+        chunks,
+        source,
+        target,
+        updateProgress("MyMemory"),
       );
-      const requestUrl = new URL("https://api.mymemory.translated.net/get");
-      requestUrl.search = new URLSearchParams({
-        q: chunks[index].text,
-        langpair: `${languages[sourceLanguage.value].translation}|${
-          languages[targetLanguage.value].translation
-        }`,
-      });
-      const response = await fetch(requestUrl);
-      const result = await response.json();
-
+    } catch {
       if (currentRequest !== requestNumber) return;
-      if (result.quotaFinished) {
-        throw new Error("The free daily translation limit has been reached. Try again tomorrow.");
-      }
-      if (!response.ok || result.responseStatus !== 200) {
+      usedFallback = true;
+      setStatus("MyMemory unavailable. Trying Google Translate…", "working");
+      try {
+        translations = await translateWithGoogle(
+          chunks,
+          source,
+          target,
+          updateProgress("Google"),
+        );
+      } catch (fallbackError) {
         throw new Error(
-          result.responseDetails ||
-            `Translation service returned an error (${result.responseStatus || response.status}).`,
+          `MyMemory and Google Translate are unavailable. ${fallbackError.message}`,
         );
       }
-      if (typeof result.responseData?.translatedText !== "string") {
-        throw new Error("The translation service returned an invalid response.");
-      }
-      translations.push(result.responseData.translatedText);
     }
 
+    if (currentRequest !== requestNumber) return;
     const translatedText = translations
       .map((translation, index) => translation + chunks[index].separator)
       .join("");
     showTranslation(translatedText);
-    setStatus("Translation ready.");
+    setStatus(usedFallback ? "Translation ready (Google fallback)." : "Translation ready.");
     showPronunciation(translatedText, currentRequest);
   } catch (error) {
     if (currentRequest !== requestNumber) return;
