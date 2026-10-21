@@ -28,13 +28,14 @@ localhost. If voice input is unavailable, typing and translation still work.
 ## Translation service
 
 Text translation uses the free [MyMemory](https://mymemory.translated.net/)
-API, which works directly from the GitHub Pages app without a server or API key.
-Each request is limited to 500 characters, so the app divides entries of up to
-1,000 characters into smaller chunks. The free service is limited to about
-5,000 characters per day and may be temporarily unavailable. Text is sent to
-MyMemory for translation; translated text is also sent to Google Translate to
-get pronunciation guides for Arabic, Chinese, Japanese, and Korean. Do not
-translate sensitive information.
+API first. If MyMemory is unavailable or reaches its daily limit, the app
+automatically tries Google Translate. Both services are accessed from the
+browser without an API key. MyMemory requests are limited to 500 characters,
+so the app divides entries of up to 1,000 characters into smaller chunks.
+Google Translate also provides pronunciation guides for Arabic, Chinese,
+Japanese, and Korean. The Google endpoint is an undocumented public endpoint
+and may be rate-limited or change without notice. Text may be sent to either
+service; do not translate sensitive information.
 
 Speech recognition is handled by the browser and may use the browser vendor's
 speech service.
