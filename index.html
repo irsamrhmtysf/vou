@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#111714" />
     <title>VOU Voice of Us</title>
     <link rel="stylesheet" href="app.css?v=7" />
-    <script src="app.js?v=8" defer></script>
+    <script src="app.js?v=9" defer></script>
   </head>
   <body>
     <main class="app-shell">
@@ -198,8 +198,36 @@
           <div class="settings-fields">
             <p>irsamrhmtysf.github.io</p>
             <p>
-              Translation uses MyMemory first, with Google Translate as a
-              fallback. Text may be sent to either service.
+              Translation tries MyMemory, then Google Translate, then the
+              optional LibreTranslate server below. Text may be sent to these
+              services when needed.
+            </p>
+            <label>
+              LibreTranslate server
+              <span class="optional-label">(optional)</span>
+              <input
+                id="libretranslate-url"
+                type="url"
+                inputmode="url"
+                placeholder="https://libretranslate.com"
+                aria-label="LibreTranslate server URL"
+              />
+            </label>
+            <label>
+              LibreTranslate API key
+              <span class="optional-label">(optional)</span>
+              <input
+                id="libretranslate-key"
+                type="password"
+                autocomplete="off"
+                placeholder="Needed by the default hosted server"
+                aria-label="LibreTranslate API key"
+              />
+            </label>
+            <p>
+              The key is kept in this tab and sent only to the server above if
+              both automatic providers fail. The default hosted server
+              requires a key; you can use a self-hosted server instead.
             </p>
           </div>
         </details>

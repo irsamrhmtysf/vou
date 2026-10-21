@@ -29,13 +29,17 @@ localhost. If voice input is unavailable, typing and translation still work.
 
 Text translation uses the free [MyMemory](https://mymemory.translated.net/)
 API first. If MyMemory is unavailable or reaches its daily limit, the app
-automatically tries Google Translate. Both services are accessed from the
-browser without an API key. MyMemory requests are limited to 500 characters,
-so the app divides entries of up to 1,000 characters into smaller chunks.
+automatically tries Google Translate, then an optional LibreTranslate server.
+Google Translate uses an undocumented public endpoint and may be rate-limited
+or change without notice. The optional LibreTranslate provider uses the
+configured server URL; its default hosted server requires an API key, while a
+self-hosted instance may allow requests without one. The key stays in the
+current browser tab and is only sent to that configured server. MyMemory
+requests are limited to 500
+characters, so entries up to 1,000 characters are split into smaller chunks.
 Google Translate also provides pronunciation guides for Arabic, Chinese,
-Japanese, and Korean. The Google endpoint is an undocumented public endpoint
-and may be rate-limited or change without notice. Text may be sent to either
-service; do not translate sensitive information.
+Japanese, and Korean. Text may be sent to any provider used; do not translate
+sensitive information.
 
 Speech recognition is handled by the browser and may use the browser vendor's
 speech service.

@@ -1,10 +1,10 @@
 const languages = {
-  id: { label: "Indonesia", flag: "id", speech: "id-ID", translation: "id" },
-  ar: { label: "العربية", flag: "eg", speech: "ar-EG", translation: "ar" },
-  en: { label: "English", flag: "us", speech: "en-US", translation: "en" },
-  zh: { label: "中文", flag: "cn", speech: "zh-CN", translation: "zh-CN" },
-  ko: { label: "한국어", flag: "kr", speech: "ko-KR", translation: "ko" },
-  ja: { label: "日本語", flag: "jp", speech: "ja-JP", translation: "ja" },
+  id: { label: "Indonesia", flag: "id", speech: "id-ID", translation: "id", libre: "id" },
+  ar: { label: "العربية", flag: "eg", speech: "ar-EG", translation: "ar", libre: "ar" },
+  en: { label: "English", flag: "us", speech: "en-US", translation: "en", libre: "en" },
+  zh: { label: "中文", flag: "cn", speech: "zh-CN", translation: "zh-CN", libre: "zh-Hans" },
+  ko: { label: "한국어", flag: "kr", speech: "ko-KR", translation: "ko", libre: "ko" },
+  ja: { label: "日本語", flag: "jp", speech: "ja-JP", translation: "ja", libre: "ja" },
 };
 
 const MAX_INPUT_LENGTH = 1000;
@@ -14,6 +14,8 @@ const targetLanguage = document.querySelector("#target-language");
 const sourceText = document.querySelector("#source-text");
 const output = document.querySelector("#translation-output");
 const pronunciationOutput = document.querySelector("#pronunciation-output");
+const libreTranslateUrl = document.querySelector("#libretranslate-url");
+const libreTranslateKey = document.querySelector("#libretranslate-key");
 const sourceFlag = document.querySelector("#source-flag");
 const targetFlag = document.querySelector("#target-flag");
 const sourceLanguageButton = document.querySelector("#source-language-button");
@@ -250,7 +252,7 @@ async function translateWithMyMemory(chunks, source, target, onProgress) {
   const translations = [];
 
   for (let index = 0; index < chunks.length; index += 1) {
-    onProgress(index);
+    if (!onProgress(index)) return;
     const chunk = chunks[index];
     const url = new URL("https://api.mymemory.translated.net/get");
     url.search = new URLSearchParams({
@@ -282,7 +284,7 @@ async function translateWithGoogle(chunks, source, target, onProgress) {
   const translations = [];
 
   for (let index = 0; index < chunks.length; index += 1) {
-    onProgress(index);
+    if (!onProgress(index)) return;
     const chunk = chunks[index];
     const url = new URL("https://translate.googleapis.com/translate_a/single");
     url.search = new URLSearchParams({
@@ -312,6 +314,53 @@ async function translateWithGoogle(chunks, source, target, onProgress) {
   return translations;
 }
 
+async function translateWithLibreTranslate(chunks, source, target, onProgress) {
+  const apiKey = libreTranslateKey.value.trim();
+  const baseUrl = libreTranslateUrl.value.trim() || "https://libretranslate.com";
+  let endpoint;
+  try {
+    endpoint = new URL(baseUrl);
+  } catch {
+    throw new Error("Enter a valid LibreTranslate server URL in Translation Info.");
+  }
+  if (endpoint.protocol !== "https:") {
+    throw new Error("The LibreTranslate server URL must use HTTPS.");
+  }
+  if (!apiKey && endpoint.hostname === "libretranslate.com") {
+    throw new Error(
+      "Add a LibreTranslate API key in Translation Info, or configure a self-hosted server that allows requests without a key.",
+    );
+  }
+  const path = endpoint.pathname.replace(/\/+$/, "");
+  endpoint.pathname = path.endsWith("/translate") ? path : `${path}/translate`;
+  endpoint.search = "";
+  endpoint.hash = "";
+
+  const translations = [];
+  for (let index = 0; index < chunks.length; index += 1) {
+    if (!onProgress(index)) return;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        q: chunks[index].text,
+        source: source.libre,
+        target: target.libre,
+        format: "text",
+        api_key: apiKey,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok || typeof result.translatedText !== "string") {
+      throw new Error(
+        result.error || `LibreTranslate returned an error (${response.status}).`,
+      );
+    }
+    translations.push(result.translatedText);
+  }
+  return translations;
+}
+
 async function translate() {
   clearTimeout(autoTranslateTimer);
   autoTranslateTimer = undefined;
@@ -332,14 +381,16 @@ async function translate() {
   const source = languages[sourceLanguage.value];
   const target = languages[targetLanguage.value];
   let translations;
-  let usedFallback = false;
+  let fallbackProvider = "";
   const updateProgress = (provider) => (index) => {
+    if (currentRequest !== requestNumber) return false;
     setStatus(
       chunks.length > 1
         ? `${provider}: translating part ${index + 1} of ${chunks.length}…`
         : `${provider}: translating…`,
       "working",
     );
+    return true;
   };
 
   try {
@@ -352,7 +403,6 @@ async function translate() {
       );
     } catch {
       if (currentRequest !== requestNumber) return;
-      usedFallback = true;
       setStatus("MyMemory unavailable. Trying Google Translate…", "working");
       try {
         translations = await translateWithGoogle(
@@ -361,10 +411,24 @@ async function translate() {
           target,
           updateProgress("Google"),
         );
-      } catch (fallbackError) {
-        throw new Error(
-          `MyMemory and Google Translate are unavailable. ${fallbackError.message}`,
-        );
+        fallbackProvider = "Google Translate";
+      } catch {
+        if (currentRequest !== requestNumber) return;
+        setStatus("Google unavailable. Trying LibreTranslate…", "working");
+        try {
+          translations = await translateWithLibreTranslate(
+            chunks,
+            source,
+            target,
+            updateProgress("LibreTranslate"),
+          );
+          fallbackProvider = "LibreTranslate";
+        } catch (thirdProviderError) {
+          if (currentRequest !== requestNumber) return;
+          throw new Error(
+            `MyMemory and Google Translate are unavailable. ${thirdProviderError.message}`,
+          );
+        }
       }
     }
 
@@ -373,7 +437,11 @@ async function translate() {
       .map((translation, index) => translation + chunks[index].separator)
       .join("");
     showTranslation(translatedText);
-    setStatus(usedFallback ? "Translation ready (Google fallback)." : "Translation ready.");
+    setStatus(
+      fallbackProvider
+        ? `Translation ready (${fallbackProvider} fallback).`
+        : "Translation ready.",
+    );
     showPronunciation(translatedText, currentRequest);
   } catch (error) {
     if (currentRequest !== requestNumber) return;
